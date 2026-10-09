@@ -29,13 +29,25 @@ describe('dndManager', function () {
     resolve()
   }))
 
-  it('should not be running with monitorDnd: false', () => new Promise((resolve) => {
+  it('should not be running with monitorDnd: false and monitorTeamsCall: false', () => new Promise((resolve) => {
     settings.set('monitorDnd', false)
+    settings.set('monitorTeamsCall', false)
     dndManager.stop()
     dndManager = null
     dndManager = new DndManager(settings)
     dndManager.isOnDnd.should.be.equal(false)
     dndManager.monitorDnd.should.be.equal(false)
+    resolve()
+  }))
+
+  it('should be running with monitorDnd: false and monitorTeamsCall: true only on Windows', () => new Promise((resolve) => {
+    settings.set('monitorDnd', false)
+    settings.set('monitorTeamsCall', true)
+    dndManager.stop()
+    dndManager = null
+    dndManager = new DndManager(settings)
+    dndManager.isOnDnd.should.be.equal(false)
+    dndManager.monitorDnd.should.be.equal(process.platform === 'win32')
     resolve()
   }))
 
