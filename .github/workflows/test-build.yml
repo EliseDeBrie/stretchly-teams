@@ -1,0 +1,36 @@
+name: Test build of Windows packages
+
+env:
+  RETENTION_DAYS: 30
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to build (leave empty for current branch)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
+    - name: Setup build environment
+      uses: ./.github/actions/setup-build
+    - name: Build packages
+      run: node_modules/.bin/electron-builder build --win --publish=never
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: stretchly-teams-windows-${{ github.run_id }}
+        path: dist/*.*
+        retention-days: ${{ env.RETENTION_DAYS }}

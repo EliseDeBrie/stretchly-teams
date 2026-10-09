@@ -1,0 +1,40 @@
+name: Packages build
+
+# Builds the Windows packages and publishes them to a GitHub pre-release
+# named after the version in package.json (tag v<version>).
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+    - name: Check tag matches package.json version
+      if: github.ref_type == 'tag'
+      shell: bash
+      run: |
+        version="v$(node -p "require('./package.json').version")"
+        if [ "$version" != "$GITHUB_REF_NAME" ]; then
+          echo "Tag $GITHUB_REF_NAME does not match package.json version $version"
+          exit 1
+        fi
+    - name: Setup build environment
+      uses: ./.github/actions/setup-build
+    - name: Build and publish Windows packages
+      run: node_modules/.bin/electron-builder build --win --publish always
+      env:
+        GH_TOKEN: ${{ secrets.github_token }}
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: stretchly-teams-windows-${{ github.run_id }}
+        path: dist/*.*
+        retention-days: 30
