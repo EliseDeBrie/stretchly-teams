@@ -168,6 +168,18 @@ describe('dndManager', function () {
       inCall.should.equal(false)
     })
 
+    it('checks at the Teams interval when it is shorter, on Windows', () => {
+      const setIntervalSpy = vi.spyOn(global, 'setInterval')
+      settings.set('monitorDnd', true)
+      settings.set('monitorTeamsCall', true)
+      settings.set('monitorDndCheckInterval', 2000)
+      settings.set('monitorTeamsCallCheckInterval', 1000)
+      dndManager.stop()
+      dndManager = new DndManager(settings)
+      setIntervalSpy.mock.lastCall[1].should.equal(process.platform === 'win32' ? 1000 : 2000)
+      setIntervalSpy.mockRestore()
+    })
+
     it('only monitors Teams calls on Windows', () => {
       settings.set('monitorTeamsCall', true)
       DndManager.shouldMonitorTeamsCall(settings).should.equal(process.platform === 'win32')

@@ -4,7 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+# Stretchly Teams
+
 ## [Unreleased]
+
+## [1.0.0] - 2026-10-09
+First release of *Stretchly Teams*, a fork of Stretchly based on upstream commit [`52929e5`](https://github.com/hovancik/stretchly/commit/52929e5) (Stretchly 1.22.1 plus the upstream *Unreleased* changes listed below).
+
+### Added
+- pause breaks while Microsoft Teams (new and classic) is in a call or meeting on Windows, detected from Teams' microphone use; breaks resume when the call ends
+- Preferences option "Show breaks even during Microsoft Teams calls"
+- advanced options `monitorTeamsCall` and `monitorTeamsCallCheckInterval`
+- `Stretchly: Teams call detected` / `Stretchly: Teams call ended` log lines
+
+### Changed
+- app renamed to *Stretchly Teams* with its own app ID and settings folder, so it can be installed next to Stretchly
+- version numbering restarts at 1.0.0
+- update check, download and issue links point to the Stretchly Teams repository
+- the installer adds the `stretchly-teams` command to PATH instead of `stretchly`
+- Windows packages only: installer, portable and 7z (Microsoft Store package removed)
+
+# Stretchly (upstream)
+Entries below are from the original [Stretchly](https://github.com/hovancik/stretchly) project. Stretchly Teams 1.0.0 includes everything up to and including the *Unreleased* section.
+
+## [Unreleased] - included in Stretchly Teams 1.0.0
 ### Added
 - CLI commands to postpone, skip and finish the current break
 

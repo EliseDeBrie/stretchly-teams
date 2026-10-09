@@ -42,14 +42,14 @@ process.on('uncaughtException', (err, _) => {
   handlingUncaughtException = true
   const dialogOpts = {
     type: 'error',
-    title: 'Stretchly',
-    message: 'An error occurred while running Stretchly and it will now quit. To report the issue, click Report.',
+    title: 'Stretchly Teams',
+    message: 'An error occurred while running Stretchly Teams and it will now quit. To report the issue, click Report.',
     buttons: ['Report', 'OK']
   }
   dialog.showMessageBox(dialogOpts).then(async (returnValue) => {
     if (returnValue.response === 0) {
       try {
-        await shell.openExternal('https://github.com/hovancik/stretchly/issues')
+        await shell.openExternal('https://github.com/EliseDeBrie/stretchly-teams/issues')
       } catch (error) {
         log.error(error)
       }
@@ -101,10 +101,10 @@ if (insideWindowsPortable()) {
 
 log.initialize({ preload: true })
 
-// Match the appId the installer stamps onto the shortcut so notifications show Stretchly.
+// Match the appId the installer stamps onto the shortcut so notifications show Stretchly Teams.
 // Skip the Store build (OS-assigned AUMID) and unpackaged dev runs.
 if (process.platform === 'win32' && !insideWindowsStore() && app.isPackaged) {
-  app.setAppUserModelId('net.hovancik.stretchly')
+  app.setAppUserModelId('io.github.elisedebrie.stretchlyteams')
 }
 
 const global = {
@@ -843,7 +843,7 @@ function startMicrobreak () {
       focusable: showBreaksAsRegularWindows,
       alwaysOnTop: !showBreaksAsRegularWindows,
       hasShadow: false,
-      title: 'Stretchly',
+      title: 'Stretchly Teams',
       titleBarStyle: process.platform === 'darwin' ? (showBreaksAsRegularWindows ? 'default' : 'hidden') : undefined,
       titleBarOverlay: process.platform === 'darwin' ? !showBreaksAsRegularWindows : undefined,
       webPreferences: {
@@ -1012,7 +1012,7 @@ function startBreak () {
       focusable: showBreaksAsRegularWindows,
       alwaysOnTop: !showBreaksAsRegularWindows,
       hasShadow: false,
-      title: 'Stretchly',
+      title: 'Stretchly Teams',
       titleBarStyle: process.platform === 'darwin' ? (showBreaksAsRegularWindows ? 'default' : 'hidden') : undefined,
       titleBarOverlay: process.platform === 'darwin' ? !showBreaksAsRegularWindows : undefined,
       webPreferences: {
@@ -1396,7 +1396,7 @@ function getTrayMenuTemplate () {
     trayMenu.push({
       label: i18next.t('main.downloadLatestVersion'),
       click: function () {
-        shell.openExternal('https://hovancik.net/stretchly/downloads')
+        shell.openExternal('https://github.com/EliseDeBrie/stretchly-teams/releases')
       }
     }, {
       type: 'separator'
@@ -1609,6 +1609,11 @@ ipcMain.on('save-setting', function (event, key, value) {
 
   if (key === 'monitorDnd') {
     breakPlanner.doNotDisturb(value)
+  }
+
+  if (key === 'monitorTeamsCall') {
+    settings.set(key, value)
+    breakPlanner.doNotDisturb(settings.get('monitorDnd'))
   }
 
   if (key === 'language') {

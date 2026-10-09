@@ -1,27 +1,16 @@
-name: Test build of packages on specific PR
+name: Test build of Windows packages
 
 env:
   RETENTION_DAYS: 30
 
 on:
+  pull_request:
   workflow_dispatch:
     inputs:
       pr_number:
         description: 'PR number to build (leave empty for current branch)'
         required: false
         type: string
-      build_snap:
-        description: 'Build snap package'
-        type: boolean
-        default: false
-      build_arm:
-        description: 'Build ARM packages'
-        type: boolean
-        default: false
-      build_normal:
-        description: 'Build normal packages (Windows/macOS/Linux)'
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -29,18 +18,8 @@ permissions:
 
 jobs:
   build:
-    if: github.event.inputs.build_normal == 'true'
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-      fail-fast: false
+    runs-on: windows-latest
     steps:
-    - name: run on linux
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libarchive-tools pkg-config
     - name: Checkout
       uses: actions/checkout@v6
       with:
@@ -48,75 +27,10 @@ jobs:
     - name: Setup build environment
       uses: ./.github/actions/setup-build
     - name: Build packages
-      run: node_modules/.bin/electron-builder build --publish=never
-      env:
-        GH_TOKEN: ${{ secrets.github_token }}
-    - name: Verify macOS app signatures
-      if: runner.os == 'macOS'
-      uses: ./.github/actions/verify-macos-signatures
+      run: node_modules/.bin/electron-builder build --win --publish=never
     - name: Upload artifacts
       uses: actions/upload-artifact@v6
       with:
-        name: stretchly-${{ matrix.os }}-${{ github.run_id }}
-        path: dist/*.*
-        retention-days: ${{ env.RETENTION_DAYS }}
-
-  snap:
-    if: github.event.inputs.build_snap == 'true'
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-      with:
-        ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
-    - name: Setup build environment
-      uses: ./.github/actions/setup-build
-    - name: Build snap package
-      run: node_modules/.bin/electron-builder --linux snap --publish=never
-      env:
-        GH_TOKEN: ${{ secrets.github_token }}
-    - name: Smoke test snap
-      run: |
-        sudo apt-get install -y xvfb
-        sudo snap install --dangerous ./dist/Stretchly_*.snap
-        xvfb-run -a stretchly &
-        sleep 8
-        pgrep -f stretchly || (snap logs stretchly && exit 1)
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v6
-      with:
-        name: stretchly-snap-${{ github.run_id }}
-        path: dist/*.snap
-        retention-days: ${{ env.RETENTION_DAYS }}
-
-  arm:
-    if: github.event.inputs.build_arm == 'true'
-    runs-on: buildjet-2vcpu-ubuntu-2204-arm
-    env:
-      USE_SYSTEM_FPM: true
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v6
-      with:
-        ref: ${{ github.event.inputs.pr_number && format('refs/pull/{0}/head', github.event.inputs.pr_number) || github.ref }}
-    - name: Install ARM build dependencies
-      run: | 
-        sudo apt update
-        sudo apt-get install --no-install-recommends -y \
-          ruby-full \
-          libarchive-tools \
-          pkg-config
-    - name: Install fpm
-      run: sudo gem install fpm -v 1.16.0
-    - name: Setup build environment
-      uses: ./.github/actions/setup-build
-    - name: Build packages
-      run: node_modules/.bin/electron-builder build --publish=never
-      env:
-        GH_TOKEN: ${{ secrets.github_token }}
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v6
-      with:
-        name: stretchly-arm-${{ github.run_id }}
+        name: stretchly-teams-windows-${{ github.run_id }}
         path: dist/*.*
         retention-days: ${{ env.RETENTION_DAYS }}

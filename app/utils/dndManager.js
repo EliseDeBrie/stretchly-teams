@@ -271,6 +271,11 @@ class DndManager extends EventEmitter {
   }
 
   _checkDnd () {
+    let interval = this.monitorDndCheckInterval
+    if (DndManager.shouldMonitorTeamsCall(this.settings)) {
+      const teamsInterval = this.settings.get('monitorTeamsCallCheckInterval')
+      interval = this.settings.get('monitorDnd') ? Math.min(interval, teamsInterval) : teamsInterval
+    }
     this.timer = setInterval(async () => {
       const doNotDisturb = await this._doNotDisturb()
       if (!this.isOnDnd && doNotDisturb) {
@@ -281,7 +286,7 @@ class DndManager extends EventEmitter {
         this.isOnDnd = false
         this.emit('dndFinished')
       }
-    }, this.monitorDndCheckInterval)
+    }, interval)
   }
 }
 

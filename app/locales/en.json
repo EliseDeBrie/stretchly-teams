@@ -1,6 +1,6 @@
 {
   "main": {
-    "toolTipHeader": "Stretchly - The break time reminder app",
+    "toolTipHeader": "Stretchly Teams - The break time reminder app",
     "microbreakIn": "Mini break in $t(utils.seconds, {'count': {{seconds}} })",
     "breakIn": "Long break in $t(utils.seconds, {'count': {{seconds}} })",
     "resumingBreaks": "Resuming breaks",
@@ -16,7 +16,7 @@
     "untilMorning": "Until morning",
     "indefinitely": "Indefinitely",
     "resetBreaks": "Reset breaks",
-    "quitStretchly": "Quit Stretchly",
+    "quitStretchly": "Quit Stretchly Teams",
     "restoreDefaults": "Restore defaults",
     "warning": "This will restore app defaults and all your settings will be lost.",
     "continue": "Continue",
@@ -32,7 +32,7 @@
     "finish": "Finish this break"
   },
   "preferences": {
-    "title": "Stretchly Preferences",
+    "title": "Stretchly Teams Preferences",
     "nav": {
       "settings": "Settings",
       "schedule": "Schedule",
@@ -41,7 +41,7 @@
       "heart": "Love Stretchly"
     },
     "settings": {
-      "openAtLogin": "Start Stretchly automatically when logging in",
+      "openAtLogin": "Start Stretchly Teams automatically when logging in",
       "showBreaksIn": "Shows breaks in:",
       "window": "Window",
       "fullscreen": "Full screen",
@@ -49,6 +49,7 @@
       "allScreens": "Shows breaks on all monitors",
       "monitorIdleTime": "Monitor system idle time (breaks are paused if system is idle).",
       "monitorDnd": "Show breaks even in Do Not Disturb mode",
+      "monitorTeamsCall": "Show breaks even during Microsoft Teams calls",
       "language": "Select language:",
       "restoreDefaults": "Restore defaults"
     },
@@ -173,7 +174,7 @@
     "primary": "Primary monitor",
     "cursor": "Follow cursor",
     "showTrayIcon": "Show tray icon",
-    "toShowTrayIcon": "Show Stretchly icon in tray",
+    "toShowTrayIcon": "Show Stretchly Teams icon in tray",
     "currentTimeInBreaks": "Current time",
     "showCurrentTimeInBreaks": "Show current local time in break window"
   },
@@ -198,7 +199,7 @@
     "newVersionAvailable": "New version is available!"
   },
   "welcome": {
-    "title": "Welcome to Stretchly",
+    "title": "Welcome to Stretchly Teams",
     "breakTimeReminderApp": "The break time reminder app",
     "viewTutorial": "View Tutorial",
     "openPreferences": "Open Preferences",

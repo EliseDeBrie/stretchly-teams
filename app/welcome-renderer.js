@@ -81,7 +81,7 @@ window.onload = async (event) => {
         window.settings.saveSettings('isFirstRun', false)
         switch (button.getAttribute('data-location')) {
           case 'tutorial':
-            window.electronApi.openExternal('https://hovancik.net/stretchly/about')
+            window.electronApi.openExternal('https://github.com/EliseDeBrie/stretchly-teams#readme')
             break
           case 'preferences':
             window.stretchly.openPreferences()

@@ -1,8 +1,9 @@
 {
   "name": "Stretchly",
+  "productName": "Stretchly Teams",
   "desktopName": "net.hovancik.Stretchly",
-  "version": "1.22.1",
-  "description": "The break time reminder app",
+  "version": "1.0.0",
+  "description": "The break time reminder app that pauses breaks during Microsoft Teams calls (fork of Stretchly)",
   "main": "app/main.js",
   "type": "module",
   "scripts": {
@@ -22,23 +23,27 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hovancik/stretchly.git"
+    "url": "git+https://github.com/EliseDeBrie/stretchly-teams.git"
   },
   "keywords": [
     "Stretchly",
+    "Teams",
     "break",
     "time",
     "reminder"
   ],
-  "author": "Jan Hovancik <jan@hovancik.net>",
+  "author": "Elise De Brie",
+  "contributors": [
+    "Jan Hovancik <jan@hovancik.net> (original Stretchly author)"
+  ],
   "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/hovancik/stretchly/issues"
+    "url": "https://github.com/EliseDeBrie/stretchly-teams/issues"
   },
-  "homepage": "https://hovancik.net/stretchly",
+  "homepage": "https://github.com/EliseDeBrie/stretchly-teams",
   "build": {
-    "appId": "net.hovancik.stretchly",
-    "productName": "Stretchly",
+    "appId": "io.github.elisedebrie.stretchlyteams",
+    "productName": "Stretchly Teams",
     "dmg": {
       "icon": "build/icon.icns",
       "iconSize": 128,
@@ -104,7 +109,6 @@
       "target": [
         "nsis",
         "7z",
-        "appx",
         "portable"
       ],
       "asarUnpack": [
@@ -125,7 +129,15 @@
     },
     "snap": {
       "base": "core22"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "EliseDeBrie",
+        "repo": "stretchly-teams",
+        "releaseType": "prerelease"
+      }
+    ]
   },
   "standard": {
     "globals": [

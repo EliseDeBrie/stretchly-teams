@@ -3,11 +3,11 @@
 !macro customInstall
   CreateDirectory "$INSTDIR\bin"
   ClearErrors
-  FileOpen $0 "$INSTDIR\bin\stretchly.cmd" w
+  FileOpen $0 "$INSTDIR\bin\stretchly-teams.cmd" w
   ${if} ${Errors}
-    DetailPrint "Stretchly: failed to create CLI shim at $INSTDIR\bin\stretchly.cmd"
+    DetailPrint "Stretchly Teams: failed to create CLI shim at $INSTDIR\bin\stretchly-teams.cmd"
   ${else}
-    FileWrite $0 "@echo off$\r$\nsetlocal$\r$\nset $\"STRETCHLY_EXE=%~dp0..\Stretchly.exe$\"$\r$\ntasklist /FI $\"IMAGENAME eq Stretchly.exe$\" 2>NUL | find /I $\"Stretchly.exe$\" >NUL$\r$\nif errorlevel 1 ($\r$\n  powershell -NoProfile -Command $\"Start-Process -FilePath $$env:STRETCHLY_EXE$\"$\r$\n) else ($\r$\n  $\"%STRETCHLY_EXE%$\" %*$\r$\n)$\r$\n"
+    FileWrite $0 "@echo off$\r$\nsetlocal$\r$\nset $\"STRETCHLY_EXE=%~dp0..\${APP_EXECUTABLE_FILENAME}$\"$\r$\ntasklist /FI $\"IMAGENAME eq ${APP_EXECUTABLE_FILENAME}$\" 2>NUL | find /I $\"${APP_EXECUTABLE_FILENAME}$\" >NUL$\r$\nif errorlevel 1 ($\r$\n  powershell -NoProfile -Command $\"Start-Process -FilePath $$env:STRETCHLY_EXE$\"$\r$\n) else ($\r$\n  $\"%STRETCHLY_EXE%$\" %*$\r$\n)$\r$\n"
     FileClose $0
   ${endif}
 

@@ -1,10 +1,10 @@
 class VersionChecker {
   latest () {
     return fetch(
-      'https://api.github.com/repos/hovancik/stretchly/releases/latest',
+      'https://api.github.com/repos/EliseDeBrie/stretchly-teams/releases/latest',
       {
         method: 'GET',
-        headers: { 'User-Agent': 'hovancik/stretchly' },
+        headers: { 'User-Agent': 'EliseDeBrie/stretchly-teams' },
         mode: 'cors',
         cache: 'default'
       })
