@@ -8,6 +8,15 @@ import { readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { isAbsolute, join } from 'node:path'
 
+// Teams call detection: Teams holds the microphone during a call or meeting.
+// Windows keeps per-app microphone usage times under this key; an app is
+// treated as using the microphone while its LastUsedTimeStart is newer than
+// its LastUsedTimeStop. This key is not documented by Microsoft, so verify the
+// behaviour on Windows (see the 'Teams call' log lines).
+const MICROPHONE_CONSENT_STORE = 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\microphone'
+// New Teams (MSIX package) and classic Teams (NonPackaged, path with '#' separators)
+const TEAMS_CONSENT_KEY = /(\\MSTeams_8wekyb3d8bbwe|#ms-teams\.exe|#teams\.exe)$/i
+
 class DndManager extends EventEmitter {
   constructor (settings) {
     super()
@@ -16,13 +25,22 @@ class DndManager extends EventEmitter {
     this.monitorDndCheckInterval = settings.get('monitorDndCheckInterval')
     this.timer = null
     this.isOnDnd = false
+    this._teamsInCall = false
 
     this._unsupDEErrorShown = false
     this._errorLogged = {}
 
-    if (this.monitorDnd) {
+    if (DndManager.shouldMonitor(settings)) {
       this.start()
     }
+  }
+
+  static shouldMonitor (settings) {
+    return settings.get('monitorDnd') || DndManager.shouldMonitorTeamsCall(settings)
+  }
+
+  static shouldMonitorTeamsCall (settings) {
+    return process.platform === 'win32' && settings.get('monitorTeamsCall')
   }
 
   start () {
@@ -145,11 +163,19 @@ class DndManager extends EventEmitter {
     // TODO also check for session state? https://github.com/felixrieseberg/electron-notification-state/tree/master#session-state
     if (this.monitorDnd) {
       if (process.platform === 'win32') {
-        let wfa = 0
-        try {
-          wfa = getFocusAssist().value
-        } catch (e) { wfa = -1 } // getFocusAssist() throw an error if OS isn't windows
-        return wfa === 1 || wfa === 2
+        if (this.settings.get('monitorDnd')) {
+          let wfa = 0
+          try {
+            wfa = getFocusAssist().value
+          } catch (e) { wfa = -1 } // getFocusAssist() throw an error if OS isn't windows
+          if (wfa === 1 || wfa === 2) {
+            return true
+          }
+        }
+        if (DndManager.shouldMonitorTeamsCall(this.settings)) {
+          return await this._isTeamsInCall()
+        }
+        return false
       } else if (process.platform === 'darwin') {
         const macOSMajorVersion = parseInt(process.getSystemVersion().split('.')[0])
         let cmd = ''
@@ -176,6 +202,40 @@ class DndManager extends EventEmitter {
     } else {
       return false
     }
+  }
+
+  async _isTeamsInCall () {
+    try {
+      const asyncExec = this._getOrCreateAsyncExec()
+      const { stdout } = await asyncExec(`reg query "${MICROPHONE_CONSENT_STORE}" /s`, { windowsHide: true })
+      const inCall = this._teamsUsesMicrophone(stdout)
+      if (inCall !== this._teamsInCall) {
+        log.info(`Stretchly: Teams call ${inCall ? 'detected' : 'ended'}`)
+        this._teamsInCall = inCall
+      }
+      return inCall
+    } catch (e) {
+      this._logErrorOnce('teams', e)
+      return false
+    }
+  }
+
+  _teamsUsesMicrophone (regOutput) {
+    const apps = {}
+    let currentKey = null
+    for (const line of regOutput.split(/\r?\n/)) {
+      if (line.startsWith('HKEY_')) {
+        currentKey = TEAMS_CONSENT_KEY.test(line.trim()) ? line.trim() : null
+        continue
+      }
+      if (!currentKey) continue
+      const match = line.trim().match(/^(LastUsedTimeStart|LastUsedTimeStop)\s+REG_QWORD\s+(0x[0-9a-f]+)$/i)
+      if (match) {
+        apps[currentKey] = apps[currentKey] || { LastUsedTimeStart: 0n, LastUsedTimeStop: 0n }
+        apps[currentKey][match[1]] = BigInt(match[2])
+      }
+    }
+    return Object.values(apps).some(app => app.LastUsedTimeStart > app.LastUsedTimeStop)
   }
 
   _getOrCreateAsyncExec () {

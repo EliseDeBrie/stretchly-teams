@@ -117,6 +117,53 @@ describe('dndManager', function () {
     }
   })
 
+  describe('Teams call detection', () => {
+    const base = 'HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\microphone'
+    const entry = (key, start, stop) => [
+      `${base}\\${key}`,
+      '    Value    REG_SZ    Allow',
+      `    LastUsedTimeStart    REG_QWORD    ${start}`,
+      `    LastUsedTimeStop    REG_QWORD    ${stop}`,
+      ''
+    ].join('\r\n')
+
+    it('detects new Teams using the microphone', () => {
+      dndManager._teamsUsesMicrophone(entry('MSTeams_8wekyb3d8bbwe', '0x1dc3a1b2c3d4e5f', '0x0')).should.equal(true)
+    })
+
+    it('detects classic Teams using the microphone', () => {
+      dndManager._teamsUsesMicrophone(entry('NonPackaged\\C:#Users#me#AppData#Local#Microsoft#Teams#current#Teams.exe', '0x1dc3a1b2c3d4e5f', '0x1dc3a1b2c3d4e00')).should.equal(true)
+    })
+
+    it('does not detect Teams after the call ended', () => {
+      dndManager._teamsUsesMicrophone(entry('MSTeams_8wekyb3d8bbwe', '0x1dc3a1b2c3d4e5f', '0x1dc3a1b2c3d4fff')).should.equal(false)
+    })
+
+    it('does not detect Teams that never used the microphone', () => {
+      dndManager._teamsUsesMicrophone(entry('MSTeams_8wekyb3d8bbwe', '0x0', '0x0')).should.equal(false)
+    })
+
+    it('ignores other apps using the microphone', () => {
+      const output = entry('Microsoft.WindowsSoundRecorder_8wekyb3d8bbwe', '0x1dc3a1b2c3d4e5f', '0x0') +
+        entry('NonPackaged\\C:#Program Files#Zoom#bin#Zoom.exe', '0x1dc3a1b2c3d4e5f', '0x0') +
+        entry('MSTeams_8wekyb3d8bbwe', '0x1dc3a1b2c3d4e5f', '0x1dc3a1b2c3d4fff')
+      dndManager._teamsUsesMicrophone(output).should.equal(false)
+    })
+
+    it('returns false when the registry query fails', async () => {
+      dndManager._getOrCreateAsyncExec = () => async () => { throw new Error('reg failed') }
+      const inCall = await dndManager._isTeamsInCall()
+      inCall.should.equal(false)
+    })
+
+    it('only monitors Teams calls on Windows', () => {
+      settings.set('monitorTeamsCall', true)
+      DndManager.shouldMonitorTeamsCall(settings).should.equal(process.platform === 'win32')
+      settings.set('monitorTeamsCall', false)
+      DndManager.shouldMonitorTeamsCall(settings).should.equal(false)
+    })
+  })
+
   it('should return something for _desktopEnvironment', () => new Promise((resolve) => {
     dndManager._desktopEnvironment.should.not.be.equal(null)
     resolve()

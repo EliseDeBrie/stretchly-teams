@@ -234,7 +234,7 @@ class BreaksPlanner extends EventEmitter {
     if (this.pollersSuspended) {
       this.pollersSuspended = false
       if (this.settings.get('naturalBreaks')) this.naturalBreaksManager.start()
-      if (this.settings.get('monitorDnd')) this.dndManager.start()
+      if (DndManager.shouldMonitor(this.settings)) this.dndManager.start()
       this.appExclusionsManager.reinitialize(this.settings)
     }
   }
@@ -272,7 +272,8 @@ class BreaksPlanner extends EventEmitter {
   }
 
   doNotDisturb (shouldUse) {
-    if (shouldUse) {
+    // Teams call detection keeps the monitor running when Do Not Disturb is off
+    if (shouldUse || DndManager.shouldMonitorTeamsCall(this.settings)) {
       this.dndManager.start()
     } else {
       this.dndManager.stop()
